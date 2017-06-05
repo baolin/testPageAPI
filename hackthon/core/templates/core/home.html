@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>Homepage</h2>
+  <p>Hello {{ user.username }}!</p>
+  <!-- <p>Access Token: {{ access_token}} </p> -->
+
+<body>
+  <script>
+    window.fbAsyncInit = function() {
+      FB.init({
+        appId      : '1747045708902808',
+        xfbml      : true,
+        version    : 'v2.9'
+      });
+      FB.AppEvents.logPageView();
+      myFacebookLogin();
+    };
+    var URL = 'http://ec2-35-163-18-1.us-west-2.compute.amazonaws.com:8000';
+
+    (function(d, s, id){
+       var js, fjs = d.getElementsByTagName(s)[0];
+       if (d.getElementById(id)) {return;}
+       js = d.createElement(s); js.id = id;
+       js.src = "//connect.facebook.net/en_US/sdk.js";
+       fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+
+    // Only works after `FB.init` is called
+    function myFacebookLogin() {
+      FB.login(function(login_response){
+        console.log(login_response)
+        var access_token = login_response.authResponse.accessToken;
+        FB.api('/me', function(response) {
+          var user_id = response['id'];
+          $('.welcome').text('Loading ' + response['name'] + '\'s most popular posts...');
+          // 1. Get Most ranked posts
+          $.ajax({
+            url: URL + '/doit?func=' + 'default&userid=' + user_id + '&access_token=' + access_token,
+            beforeSend: function( xhr ) {
+              xhr.overrideMimeType( "text/plain; charset=x-user-defined" );
+            }
+          })
+          .done(function( data ) {
+            if ( console && console.log ) {
+              console.log( "Ajax data:", data);
+              data = JSON.parse(data);
+              for(var i = 0; i < data.length; i++) {
+                var id = data[i][0];
+                var page_id = id.split('_')[0];
+                var post_id = id.split('_')[1];
+                var url = "https://www.facebook.com/" + page_id + "/posts/" + post_id;
+                $('.welcome').text(response['name'] + '\'s most popular posts Loaded');
+
+                if (typeof (FB) != 'undefined') {
+                    FB.init({
+                        appId      : '1747045708902808',
+                        xfbml      : true,
+                        version    : 'v2.9'
+                      });
+                } else {
+                    $.getScript("http://connect.facebook.net/en_US/all.js#xfbml=1", function () {
+                        FB.init({
+                            appId      : '1747045708902808',
+                            xfbml      : true,
+                            version    : 'v2.9'
+                          });
+                    });
+                }
+
+                var url_iframe = '<iframe src="https://www.facebook.com/plugins/post.php?href=https%3A%2F%2Fwww.facebook.com%2F' + page_id + '%2Fposts%2F' +
+                post_id + '%2F&width=350&show_text=false&appId=1747045708902808&height=326" width="350" height="326" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowTransparency="true"></iframe> <br>';
+
+                console.log(url);
+                $('.top_post_holder').append('<div class="fb-post" data-href="' + url + '"></div>');
+              }
+            }
+          });
+          
+	/*$('.class222').text('Top Liked Posts For one of your page Loading....');
+          $.ajax({
+            url: URL + '/doit?func=get_most_liked_posts&userid=' + user_id + '&access_token=' + access_token,
+            beforeSend: function( xhr ) {
+              xhr.overrideMimeType( "text/plain; charset=x-user-defined" );
+            }
+          })
+          .done(function( data ) {
+            $('.class222').text('Top Liked Posts For one of your page Loaded');
+            if ( console && console.log ) {
+              console.log( "Ajax data222:", data);
+              data = JSON.parse(data);
+              for(var i = 0; i < data.length; i++) {
+                var id = data[i][0];
+                var page_id = id.split('_')[0];
+                var post_id = id.split('_')[1];
+                var url = "https://www.facebook.com/" + page_id + "/posts/" + post_id;
+                
+
+                if (typeof (FB) != 'undefined') {
+                    FB.init({
+                        appId      : '1747045708902808',
+                        xfbml      : true,
+                        version    : 'v2.9'
+                      });
+                } else {
+                    $.getScript("http://connect.facebook.net/en_US/all.js#xfbml=1", function () {
+                        FB.init({
+                            appId      : '1747045708902808',
+                            xfbml      : true,
+                            version    : 'v2.9'
+                          });
+                    });
+                }
+                console.log(url);
+                $('.one_page_top_liked').append('<div class="fb-post" data-href="' + url + '"></div>');
+              }
+            }
+          });*/
+          $('.class_page_insights').text('Some insights for your pages....');
+          $.ajax({
+            url: URL + '/doit?func=pages_insights&userid=' + user_id + '&access_token=' + access_token,
+            beforeSend: function( xhr ) {
+              xhr.overrideMimeType( "text/plain; charset=x-user-defined" );
+            }
+          })
+          .done(function( data_ret ) {
+            $('.class_page_insights').text('Some insights for your pages Loaded');
+
+            var data = {
+              'page1' : [['05-01', 1], ['05-02', 2], ['05-03', 3], ['05-04', 4]],
+              'page2' : [['05-01', 3], ['05-02', 4], ['05-03', 9], ['05-04', 1]],
+            };
+            data = JSON.parse(data_ret);
+            console.log(data);
+            var draw_data = [];
+            for (var pagename in data) {
+
+              if (data.hasOwnProperty(pagename)) { 
+                var val = data[pagename];
+                var all_x = [];
+                var all_y = [];
+                for (var i in val) {
+                  all_x.push(val[i][0]);
+                  all_y.push(val[i][1]);
+                }
+                var data_to_plot = {
+                  x: all_x,
+                  y: all_y,
+                  mode: 'lines+markers',
+                  name: pagename,
+                };
+                console.log(data_to_plot);
+                draw_data.push(data_to_plot);
+              }
+            }
+
+            var layout = {
+              title:'Page New Fans Added'
+            };
+            Plotly.newPlot('tester', draw_data, layout);
+            
+          });
+        });
+
+        //FB.api('/me/accounts', 'get', function(response) {
+         // console.log(response);
+
+        // });
+      }, {scope: 'publish_actions,manage_pages,publish_pages'});
+    }
+
+
+
+
+  </script>
+  <h1 class='class_page_insights'></h1>
+  Plot Sample App:
+  <div id="tester" style="width:600px;height:250px;"></div>
+
+  <!-- <button onclick="myFacebookLogin()">Login with Facebook</button> -->
+  <h1 class='welcome'>Top Posts</h1>
+  <div class='top_post_holder'></div>
+
+  <h1 class='class222'></h1>
+  <div class='one_page_top_liked'></div>
+  <!-- <div class="fb-post" data-href="https://www.facebook.com/937132923021220/posts/1432302426837598"></div> -->
+</body>
+{% endblock %}
+
+

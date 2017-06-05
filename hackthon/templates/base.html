@@ -1,0 +1,30 @@
+{% load static %}<!DOCTYPE html>
+<html>
+<head>
+  <title>Facebook Pages API Sample Apps</title>
+  <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}">
+  <script
+   src="https://code.jquery.com/jquery-3.2.1.min.js"
+   integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+   crossorigin="anonymous"></script> 
+   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  </head>
+<body>
+  <header>
+    <h1>Facebook Pages API Sample Apps</h1>
+  
+    <hr>
+  </header>
+  <main>
+    {% for message in messages %}
+      <p style="color: {% if message.tags == 'success' %}green{% elif message.tags == 'error' %}red{% endif %}">
+        {{ message }}
+      </p>
+    {% endfor %}
+    {% block content %}
+    {% endblock %}
+  </main>
+  <footer>
+  </footer>
+</body>
+</html>
